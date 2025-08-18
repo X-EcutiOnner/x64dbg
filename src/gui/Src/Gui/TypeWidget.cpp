@@ -5,6 +5,7 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QRegularExpression>
 
 TypeWidget::TypeWidget(QWidget* parent)
     : QTreeWidget(parent)
@@ -22,7 +23,7 @@ TypeWidget::TypeWidget(QWidget* parent)
     setHeaderLabels(headers);
 
     // Set item delegate for rich text rendering
-    setItemDelegate(new RichTextItemDelegate(&mTextColor, this));
+    setItemDelegate(new RichTextItemDelegate(this));
 
     // Set uniform row height to prevent spacing changes when content changes
     setUniformRowHeights(true);
@@ -35,7 +36,11 @@ TypeWidget::TypeWidget(QWidget* parent)
     colorsUpdatedSlot();
     fontsUpdatedSlot();
 
-    auto charWidth = fontMetrics().width(' ');
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
+    auto charWidth = fontMetrics().horizontalAdvance(' ');
+#else
+    auto chatWidth = fontMetrics().width(' ');
+#endif // QT_VERSION
     setColumnWidth(ColField, 4 + charWidth * 50);
     setColumnWidth(ColOffset, 6 + charWidth * 7);
     setColumnWidth(ColAddress, 6 + charWidth * sizeof(duint) * 2);
@@ -162,13 +167,29 @@ void TypeWidget::loadWindowSettings(const QString & settingSection)
         loadColumn(i);
 }
 
+bool TypeWidget::hasSelection() const
+{
+    return !selectedItems().empty();
+}
+
+TypeDescriptor TypeWidget::selectedType() const
+{
+    return hasSelection() ? selectedItems()[0]->data(0, Qt::UserRole).value<TypeDescriptor>() : TypeDescriptor();
+}
+
 void TypeWidget::colorsUpdatedSlot()
 {
+#ifdef X64DBG
     mTextColor = ConfigColor("StructTextColor");
+    auto p = palette();
+    p.setColor(QPalette::Text, mTextColor);
+    p.setColor(QPalette::HighlightedText, mTextColor);
+    setPalette(p);
     auto background = ConfigColor("StructBackgroundColor");
     auto altBackground = ConfigColor("StructAlternateBackgroundColor");
     auto style = QString("QTreeWidget { background-color: %1; alternate-background-color: %2; }").arg(background.name(), altBackground.name());
     setStyleSheet(style);
+#endif // X64DBG
 }
 
 void TypeWidget::fontsUpdatedSlot()
@@ -197,8 +218,9 @@ void TypeWidget::updateValuesSlot()
         if(type.type.callback) //use the provided callback
         {
             char value[128] = "";
-            size_t valueCount = _countof(value);
-            if(!type.type.callback(&type.type, value, &valueCount) && valueCount && valueCount != _countof(value))
+            size_t valueCount = sizeof(value);
+            // TODO: what does valueCount && valueCount != sizeof(value) do exactly?
+            if(!type.type.callback(&type.type, value, &valueCount) && valueCount && valueCount != sizeof(value))
             {
                 auto dest = new char[valueCount];
                 if(type.type.callback(&type.type, dest, &valueCount))
@@ -287,20 +309,20 @@ QString TypeWidget::highlightTypeName(QString name) const
         };
         QString keywordRegex;
         keywordRegex += "\\b(";
-        for(size_t i = 0; i < _countof(keywords); i++)
+        for(size_t i = 0; i < sizeof(keywords) / sizeof(keywords[0]); i++)
         {
             if(i > 0)
                 keywordRegex += '|';
-            keywordRegex += QRegExp::escape(keywords[i]);
+            keywordRegex += QRegularExpression::escape(keywords[i]);
         }
         keywordRegex += ")\\b";
-        return QRegExp(keywordRegex, Qt::CaseSensitive);
+        return QRegularExpression(keywordRegex);
     }();
 
     name.replace(re, "<b>\\1</b>");
 
-    static QRegExp sre("^(\\[\\d+\\] )?(struct|union|class|enum)( [a-zA-Z0-9_:$]+)?");
-    name.replace(sre, "\\1<u>\\2</u><b>\\3</b>");
+    static QRegularExpression sre(R"(^(\[\d+\] )?(struct|union|class|enum)( [a-zA-Z0-9_:$]+)?)");
+    name.replace(sre, R"(\1<u>\2</u><b>\3</b>)");
 
     return name;
 }

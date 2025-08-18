@@ -1,0 +1,39 @@
+name: Cross
+
+on: [push, pull_request]
+
+# Automatically cancel previous runs of this workflow on the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cmake:
+    # Skip building pull requests from the same repository
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Visual Studio Development Environment
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@d325aaf2a8baeeda41ad0b5d39f84a6af9bcf005 # v4.3.0
+        with:
+          cache: true
+          modules: qtwebsockets
+
+      - name: Build
+        run: |
+          cd src/cross
+          cmake -B build -G Ninja -DCMAKE_UNITY_BUILD=ON
+          cmake --build build

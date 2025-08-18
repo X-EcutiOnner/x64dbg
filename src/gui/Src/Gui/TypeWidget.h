@@ -9,6 +9,11 @@ struct TypeDescriptor
     TYPEDESCRIPTOR type = {};
     QString name;
     QString typeName;
+
+    bool empty() const
+    {
+        return type.magic != 0;
+    }
 };
 Q_DECLARE_METATYPE(TypeDescriptor)
 
@@ -18,12 +23,14 @@ class TypeWidget : public QTreeWidget
 
 public:
     explicit TypeWidget(QWidget* parent = nullptr);
-    ~TypeWidget() = default;
 
     void clearTypes();
     QTreeWidgetItem* typeAddNode(QTreeWidgetItem* parent, const TYPEDESCRIPTOR* type);
     void saveWindowSettings(const QString & settingSection);
     void loadWindowSettings(const QString & settingSection);
+
+    bool hasSelection() const;
+    TypeDescriptor selectedType() const;
 
     // Column indices
     enum ColumnIndex

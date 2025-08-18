@@ -5,6 +5,8 @@
 #include "zydis_wrapper.h"
 #include <algorithm>
 #include <stdexcept>
+#include <cstring>
+#include <cinttypes>
 
 static const char* ZydisMnemonicGetStringHook(ZydisMnemonic mnemonic)
 {
@@ -340,20 +342,20 @@ std::string Zydis::InstructionText(bool replaceRipRelative) const
         if(found != std::string::npos)
         {
             auto wVA = Address();
-            auto end = result.find("]", found);
+            auto end = result.find(']', found);
             auto ripStr = result.substr(found + 1, end - found - 1);
             uint64_t offset;
 #ifdef _MSC_VER
-            sscanf_s(ripStr.substr(ripStr.rfind(' ') + 1).c_str(), "%llX", &offset);
+            sscanf_s(ripStr.substr(ripStr.rfind(' ') + 1).c_str(), "%" PRIx64, &offset);
 #else
-            sscanf(ripStr.substr(ripStr.rfind(' ') + 1).c_str(), "%llX", &offset);
+            sscanf(ripStr.substr(ripStr.rfind(' ') + 1).c_str(), "%" PRIx64, &offset);
 #endif // _MSC_VER
             auto dest = ripPlus ? (wVA + offset + Size()) : (wVA - offset + Size());
             char buf[20];
 #ifdef _MSC_VER
-            sprintf_s(buf, "0x%llx", dest);
+            sprintf_s(buf, "0x%" PRIx64, dest);
 #else
-            snprintf(buf, sizeof(buf), "0x%llx", dest);
+            snprintf(buf, sizeof(buf), "0x%" PRIx64, dest);
 #endif // _MSC_VER
             result.replace(found + 1, ripStr.length(), buf);
         }

@@ -418,10 +418,9 @@ extern "C" __declspec(dllexport) bool isunicodestring(const unsigned char* data,
 
 bool disasmispossiblestring(duint addr, STRING_TYPE* type)
 {
-    unsigned char data[60];
-    memset(data, 0, sizeof(data));
+    unsigned char data[60] = {};
     duint bytesRead = 0;
-    if(!MemReadUnsafe(addr, data, sizeof(data), &bytesRead) && bytesRead < 2)
+    if(!MemReadUnsafe(addr, data, sizeof(data) - 1, &bytesRead) && bytesRead < 2)
         return false;
     if(isasciistring(data, sizeof(data)))
     {

@@ -1,10 +1,11 @@
 #include "AbstractTableView.h"
 #include <QStyleOptionButton>
+#include <cinttypes>
 #include "Configuration.h"
-#include "ColumnReorderDialog.h"
-#include "CachedFontMetrics.h"
+#include <Gui/ColumnReorderDialog.h>
+#include <Utils/CachedFontMetrics.h>
 #include "Bridge.h"
-#include "MethodInvoker.h"
+#include <Utils/MethodInvoker.h>
 
 AbstractTableScrollBar::AbstractTableScrollBar(QScrollBar* scrollbar)
 {
@@ -843,7 +844,7 @@ int AbstractTableView::scaleFromUint64ToScrollBarRange(duint value)
         {
             if(valueMax == 0)
             {
-                printf("valueMax: %lli, value: %llu, rightShiftCount: %d\n", valueMax, value, mScrollBarAttributes.rightShiftCount);
+                printf("valueMax: %" PRId64 ", value: %" PRIu64 ", rightShiftCount: %d\n", valueMax, value, mScrollBarAttributes.rightShiftCount);
             }
             // TODO: division by zero
             return (int)((dsint)((dsint)verticalScrollBar()->maximum() * (dsint)value) / (dsint)valueMax);

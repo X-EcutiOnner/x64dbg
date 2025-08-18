@@ -1,0 +1,34 @@
+[variables]
+LIBWOLV_ENABLE_TESTS = false
+HTTPLIB_INSTALL = false
+HTTPLIB_USE_ZSTD_IF_AVAILABLE = false
+HTTPLIB_USE_BROTLI_IF_AVAILABLE = false
+HTTPLIB_USE_ZLIB_IF_AVAILABLE = false
+HTTPLIB_USE_OPENSSL_IF_AVAILABLE = false
+
+[fetch-content.json]
+url = "https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz"
+sha256 = "42f6e95cad6ec532fd372391373363b62a14af6d771056dbfc86160e6dfff7aa"
+
+[fetch-content.cpp-httplib]
+git = "https://github.com/yhirose/cpp-httplib"
+tag = "v0.25.0"
+
+[fetch-content.linux-pe]
+git = "https://github.com/can1357/linux-pe"
+tag = "1fcb057963da3d25048bf1a331cd84aab9e09c99"
+
+[fetch-content.PatternLanguage]
+git = "https://github.com/WerWolv/PatternLanguage"
+tag = "3e98b047c52c07bb1816bd0936f561ce7797469d"
+
+[fetch-content.udmp-parser]
+git = "https://github.com/mrexodia/udmp-parser"
+tag = "bc5952eda39ba0b1a07fc57f57d166292f1e9563"
+subdir = "src"
+
+# https://github.com/mity/md4c/commit/481fbfbdf72daab2912380d62bb5f2187d438408
+[target.md4c-html]
+type = "static"
+sources = ["md4c/*.c", "md4c/*.h"]
+include-directories = ["md4c"]

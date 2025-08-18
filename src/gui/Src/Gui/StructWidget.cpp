@@ -63,7 +63,7 @@ void StructWidget::setupContextMenu()
         return hasSelection && !selectedItem->parent();
     });
     mMenuBuilder->addAction(makeAction(DIcon("eraser"), tr("Remove all"), SLOT(clearSlot())));
-    mMenuBuilder->addAction(makeShortcutDescAction(DIcon("sync"), tr("&Refresh values"), tr("Quickly refresh the values, without reloading the type."), SLOT(typeUpdateWidgetSlot()), "ActionRefresh"));
+    mMenuBuilder->addAction(makeShortcutDescAction(DIcon("sync"), tr("&Refresh values"), tr("Quickly refresh the values, without reloading the type."), SLOT(updateValuesSlot()), "ActionRefresh"));
 
     auto copyMenu = new MenuBuilder(this);
     for(int column = 0; column < columnCount(); column++)

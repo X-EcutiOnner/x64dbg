@@ -1,9 +1,11 @@
 #pragma once
 #include <QMenu>
 #include <QAction>
+#include <QMessageBox>
+#include <QApplication>
 #include <functional>
 #include <utility>
-#include "Configuration.h"
+#include <Configuration.h>
 
 using SlotFunc = std::function<void()>;
 using MakeMenuFunc1 = std::function<QMenu*(const QString &)>;
@@ -64,7 +66,15 @@ public:
 private:
     QAction* connectAction(QAction* action, const char* slot)
     {
-        QObject::connect(action, SIGNAL(triggered(bool)), getBase(), slot);
+        if(!QObject::connect(action, SIGNAL(triggered(bool)), getBase(), slot))
+        {
+            QMessageBox::critical(
+                QApplication::activeWindow(),
+                "Error",
+                QString("Failed to connect action '%1' from %2 to slot '%3'.")
+                .arg(action->text(), action->parent()->metaObject()->className(), slot)
+            );
+        }
         return action;
     }
 

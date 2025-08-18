@@ -13,7 +13,7 @@ class MenuBuilder : public QObject
 public:
     typedef std::function<bool(QMenu*)> BuildCallback;
 
-    MenuBuilder(QObject* parent, BuildCallback callback = nullptr)
+    explicit MenuBuilder(QObject* parent, BuildCallback callback = nullptr)
         : QObject(parent),
           _callback(callback)
     {
